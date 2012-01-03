@@ -42,14 +42,14 @@ function $c(command, args, fn, on_timeout, no_spinner, freeze_msg) {
 			var rtxt = req.responseText;
 						
 			try { 
-				var r = JSON.parse(rtxt); 
+				var r = JSON.parse(rtxt);
 			} catch(e) { 
 				alert('Handler Exception:' + rtxt);
 				return; 
 			}
 			// unfreeze
-			if(freeze_msg)unfreeze();
 			
+			if(freeze_msg)unfreeze();
 			if(!validate_session(r,rtxt)) return;
 			if(r.exc) { errprint(r.exc); };
 			if(r.server_messages) { msgprint(r.server_messages);};
@@ -75,8 +75,7 @@ function validate_session(r,rt) {
 		return true;
 	}
 	if(start_sid && start_sid != get_cookie('sid') && user!='Guest') {
-		page_body.set_session_changed();	
-		return;
+		return true;
 	}
 
 	// check for expired session

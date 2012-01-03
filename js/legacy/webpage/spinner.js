@@ -1,9 +1,10 @@
 var _loading_div;
 function set_loading() {
+	pending_req++;
+	if(!page_body) return;
 	if(page_body.wntoolbar)$ds(page_body.wntoolbar.spinner);
 	$y(document.getElementsByTagName('body')[0], {cursor:'progress'});
 	if(page_body.on_start_spinner) page_body.on_start_spinner();
-	pending_req++;
 }
 
 function hide_loading() {

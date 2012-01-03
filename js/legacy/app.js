@@ -62,9 +62,9 @@ function startup() {
 	}
 	
 	var callback = function(r,rt) {
-		if(wn.sb) wn.sb.hide();
+		console.log(3);
 		if(r.exc) msgprint(r.exc);
-		
+				
 		setup_globals(r);
 		setup_history();
 		setup_events();
@@ -95,6 +95,7 @@ function startup() {
 			loadpage(home_page);
 		}
 	}
+	
 	if(_startup_data && keys(_startup_data).length && _startup_data.docs) {
 		LocalDB.sync(_startup_data.docs);
 		callback(_startup_data, '');
@@ -102,8 +103,9 @@ function startup() {
 		// for debug
 		if(_startup_data.server_messages) msgprint(_startup_data.server_messages);
 	} else {
-		if($i('startup_div'))
+		if($i('startup_div')) {
 			$c('startup',{},callback,null,1);
+		}
 	}
 }
 
