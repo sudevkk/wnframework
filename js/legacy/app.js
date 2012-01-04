@@ -1,5 +1,8 @@
 // App.js
 
+// load libs
+wn.require('lib/js/wn/core/class.js');
+
 // dialog container
 var popup_cont;
 var session = {};
@@ -62,7 +65,6 @@ function startup() {
 	}
 	
 	var callback = function(r,rt) {
-		console.log(3);
 		if(r.exc) msgprint(r.exc);
 				
 		setup_globals(r);
@@ -126,6 +128,7 @@ function logout() {
 		}
 		redirect_to_login();
 	});
+	return false;
 }
 
 function redirect_to_login() {

@@ -1,3 +1,5 @@
+wn.provide('wn.ui');
+
 wn.ui.Button = function(args) {
 	wn.require('lib/css/ui/buttons.css')
 	var me = this;

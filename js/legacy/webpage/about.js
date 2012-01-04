@@ -21,4 +21,5 @@ function show_about() {
 		about_dialog = d;
 	}
 	about_dialog.show();
+	return false;
 }
