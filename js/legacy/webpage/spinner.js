@@ -1,6 +1,5 @@
 function set_loading() {
 	pending_req++;
-	if(!page_body) return;
 	$('#spinner').css('visibility', 'visible');
 	$('body').css('cursor', 'progress');
 }

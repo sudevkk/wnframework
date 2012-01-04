@@ -26,41 +26,30 @@ function Body() {
 		return n;
 	}
 	
-	this.setup_page_areas = function() {		
-		var n = this.no_of_columns();
+	this.setup_page_areas = function() {
+		this.left_sidebar = $('#left-sidebar').get(0);
+		this.center = $('#main').get(0);
+		this.right_sidebar = $('#sidebar').get(0);
 
-		// has sidebars, make a table
-		this.body_table = make_table(this.body, 1, n, '100%');
-		$y(this.body_table, {tableLayout:'fixed'});
-		var c = 0;
-				
-		// left sidebar
-		this.left_sidebar = $td(this.body_table, 0, c);
-		$y(this.left_sidebar, {width:cint(this.cp.left_sidebar_width) + 'px'});
-		c++;
-			
-		// center
-		this.center = $a($td(this.body_table, 0, c), 'div');
-		c++;
-			
-		// right side bar
-		if(cint(this.cp.right_sidebar_width)) {
-			this.right_sidebar = $td(this.body_table, 0, c);
-			$y(this.right_sidebar, {width:cint(this.cp.right_sidebar_width) + 'px'})
-			c++;			
-		}
-		
 		this.center.header = $a(this.center, 'div');
 		this.center.body = $a(this.center, 'div');
 		this.center.loading = $a(this.center, 'div', '', {margin:'200px 0px', fontSize:'14px', color:'#999', textAlign:'center'});
-		this.center.loading.innerHTML = 'Loading...'
-				
+		this.center.loading.innerHTML = 'Loading...';
 	}
-
-	this.setup_sidebar_menu = function() {
-		if(this.left_sidebar && this.cp.show_sidebar_menu){
-			sidebar_menu = new SidebarMenu();
-			sidebar_menu.make_menu('');
+	
+	this.full_page = function() {
+		if($('#main').hasClass('span10')) {
+			$('#sidebar').css('display', 'none');
+			$('#main').removeClass('span10').addClass('span13');
+			if(this.cur_page) this.cur_page.with_sidebar = false; // remember
+		}
+	}
+	
+	this.with_sidebar = function() {
+		if($('#main').hasClass('span13')) {
+			$('#main').removeClass('span13').addClass('span10');
+			$('#sidebar').css('display', 'block');
+			if(this.cur_page) this.cur_page.with_sidebar = true; // remember
 		}
 	}
 	
@@ -99,22 +88,11 @@ function Body() {
 		this.cp = locals['Control Panel']['Control Panel'];
 		
 		this.wrapper = $a($i('body_div'),'div');
-		this.banner_area = $a(this.wrapper, 'div');;
-		
-		this.topmenu = $a(this.wrapper, 'div');
-		this.breadcrumbs = $a(this.wrapper, 'div');
+		this.banner_area = $a(this.wrapper, 'div');
 		this.body = $a(this.wrapper, 'div');
 		this.footer = $a(this.wrapper, 'div');
-		
-		// sidebars
-		if(user_defaults.hide_sidebars) {
-			this.cp.left_sidebar_width = null;
-			this.cp.right_sidebar_width = null;
-		}		
-
 		this.setup_page_areas();
 
-	
 		// headers & footer
 		this.setup_header_footer();
 
@@ -125,10 +103,6 @@ function Body() {
 			wn.require('lib/js/wn/ui/toolbar/toolbar.js');
 			this.wntoolbar = new wn.ui.toolbar.Toolbar();
 		}
-		
-		// page width
-		if(this.cp.page_width) $y(this.wrapper,{width:cint(this.cp.page_width) + 'px'});
-		
 	}
 	
 	// Standard containers
@@ -140,45 +114,57 @@ function Body() {
 	this.pages = {};
 	this.cur_page = null;
 	this.add_page = function(label, onshow, onhide) {
-		var c = $a(this.center.body, 'div');
+		var newpage = $a(this.center.body, 'div','content-wrap');
+		newpage.sidebar = $a(this.right_sidebar, 'div');
+		newpage.with_sidebar = true;
+		
+		$(newpage).attr('data-pageid', label)
+
 		if(onshow)
-			c.onshow = onshow;
+			newpage.onshow = onshow;
 		if(onhide)
-			c.onhide = onhide;
-		this.pages[label] = c;
-		$dh(c);
-		return c;
+			newpage.onhide = onhide;
+		this.pages[label] = newpage;
+		
+		$dh(newpage);
+		$dh(newpage.sidebar);
+		
+		return newpage;
 	}
 	
 	this.change_to = function(label) {
 		// hide existing
 		$dh(this.center.loading);
-		if(me.cur_page &&  me.pages[label]!=me.cur_page) {
+		if(me.cur_page && me.pages[label]!=me.cur_page) {
 			if(me.cur_page.onhide)
 				me.cur_page.onhide();
 			$dh(me.cur_page);
+			$dh(me.cur_page.sidebar);
 		}
-		// show
 		me.cur_page = me.pages[label];
+		if(!me.cur_page) console.log(label + ' not found')
+		
 		me.cur_page_label = label;
+		
+		// show page and sidebar
 		$(me.cur_page).fadeIn();
+		$ds(me.cur_page.sidebar);
+
+		// with our without sidebar?
+		if(me.cur_page.with_sidebar) {
+			me.with_sidebar();			
+		} else {
+			me.full_page();
+		}
 	
 		// on show
 		if(me.cur_page.onshow)
-			me.cur_page.onshow(me.cur_page);
-	}
-
-	this.set_status = function(txt) {
-		if(this.status_area)
-			this.status_area.innerHTML = txt;
+			me.cur_page.onshow(me.cur_page);			
 	}
 	
 	this.set_session_changed = function() {
-		if(this.session_message_set) return;
-		var div = $a($i('body_div').parentNode,'div','',{textAlign: 'center', fontSize:'14px', margin:'150px auto'});
-		$dh('body_div');
-		div.innerHTML = 'This session has been changed. Please <span class="link_type" onclick="window.location.reload()">refresh</span> to continue';
-		this.session_message_set = 1;
+		msgprint('Session Expired');
+		location.reload();
 	}
 	
 	this.setup();

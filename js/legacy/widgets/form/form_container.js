@@ -1,17 +1,3 @@
-_f.FrmContainer = function() {
-	this.wrapper = page_body.add_page("Forms", function() {}, function() { });
-	this.last_displayed = null;
-	
-	// create hidden
-	$dh(this.wrapper);
-
-	this.body = $a(this.wrapper,'div','frm_container');
-		
-	// make by twin
-	_f.frm_dialog = new _f.FrmDialog();
-}
-
-
 // FrmDialog - twin of FrmContainer
 // =======================================================================
 _f.frm_dialog = null;
@@ -74,8 +60,8 @@ _f.FrmDialog = function() {
 			_f.cur_grid.refresh_row(_f.cur_grid_ridx, me.dn);
 		
 		// set the new global cur_frm (if applicable)
-		if(page_body.cur_page_label = 'Forms') {
-			cur_frm = _f.frm_con.cur_frm;
+		if(page_body.cur_page_label.substr(0,5) = 'Form-') {
+			cur_frm = _f.cur_frm;
 		}
 	}
 	this.dialog = d;
@@ -97,8 +83,6 @@ _f.add_frm = function(doctype, onload, opt_name, from_archive) {
 
 	// Load Doctype from server
 	var callback = function(r,rt) {
-		page_body.set_status('Done')
-
 		if(!locals['DocType'][doctype]) {
 			if(r.exc) { msgprint("Did not load " + doctype, 1); }
 			loadpage('_home');
@@ -120,14 +104,11 @@ _f.add_frm = function(doctype, onload, opt_name, from_archive) {
 		if(meta.istable) meta.in_dialog = 1;
 		
 		if(cint(meta.in_dialog)) {
-			var parent = _f.frm_dialog;	
 			in_dialog = true;
-		} else {
-			var parent = _f.frm_con;
 		}
 		
 		// create the object
-		var f = new _f.Frm(doctype, parent);
+		var f = new _f.Frm(doctype);
 		f.in_dialog = in_dialog;
 		
 		if(onload)onload(r,rt);
@@ -152,5 +133,3 @@ _f.add_frm = function(doctype, onload, opt_name, from_archive) {
 		$c('webnotes.widgets.form.getdoctype', args={'doctype':doctype}, callback);
 	}
 }
-
-

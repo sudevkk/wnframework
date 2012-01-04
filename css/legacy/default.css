@@ -1702,16 +1702,12 @@ div.psidebar-head {
 }
 
 div.psidebar-section {
-	background-color: #f7f7f5;
-	border: 2px solid #b2b2b7;
 	margin-bottom: 11px;
 }
 
 div.psidebar-section-head {
 	font-weight: bold;
-	font-size: 13px;
-	color: #222;
-	background-color: #d8d8d4;
+	font-size: 15px;
 	margin-bottom: 7px;	
 	padding: 3px 11px;
 }

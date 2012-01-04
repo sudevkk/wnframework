@@ -73,14 +73,13 @@ function startup() {
 
 		var a = new Body();
 		page_body.run_startup_code();
-		page_body.setup_sidebar_menu();
 		
 		for(var i=0; i<startup_list.length; i++) {
 			startup_list[i]();
 		}		
 		
 		$dh('startup_div');
-		$ds('body_div');
+		$('.container').css('display', 'block');
 
 		// show a new form on loading?
 		if(get_url_arg('embed')) {

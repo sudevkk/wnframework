@@ -1,3 +1,40 @@
+body {
+	background-color: #eee;
+}
+
+.container {
+	width: 940px;
+}
+
+.container .row-wrap {
+	-webkit-border-radius: 6px;
+	-moz-border-radius: 6px;
+	border-radius: 6px;
+	margin-top: 60px;
+
+	background-color: #f9f9f9;
+	-webkit-box-shadow: -2px -2px 20px rgba(0, 0, 0, 0.1);
+	-moz-box-shadow: -2px -2px 20px rgba(0, 0, 0, 0.1);
+	box-shadow: -2px -2px 20px rgba(0, 0, 0, 0.1);	
+	overflow: hidden;
+}
+
+.row > [class*="span"], .row-wrap > [class*="span"] {
+	display: inline;
+	float: left;
+	margin-left: 0px !important;
+}
+
+#main {
+	background-color: #fff;	
+	min-height: 500px;
+	border-right: 1px solid #eee;
+}
+
+.content-wrap {
+	padding: 20px;
+}
+
 /*extra size menus for recent*/
 .menu-dropdown, .dropdown-menu#toolbar-recent {
 	width: 260px !important;

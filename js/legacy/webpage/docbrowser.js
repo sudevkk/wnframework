@@ -1,11 +1,9 @@
-/* ItemBrowserPage
- 	+ this.my_page
-		+ this.page_layout (wn.PageLayout)
+/* 
+	+ this.page_layout (wn.PageLayout)
 		+ this.wrapper
 		+ this.body
 			+ ItemBrowser
 				+ this.wrapper
-					+ this.wtab
 						+ body
 							+ has_results
 								+ head
@@ -17,38 +15,12 @@
 
 */
 
-
-ItemBrowserPage = function() {
-	this.lists = {};
-	this.dt_details = {};
-	this.cur_list = null;
-
-	this.my_page = page_body.add_page('ItemBrowser');
-	this.wrapper = $a(this.my_page,'div');
-}
-
-// -------------------------------------------------
-
-ItemBrowserPage.prototype.show = function(dt, label, field_list) {
-	var me = this;
-
-	if(this.cur_list && this.cur_list.dt != dt) $dh(this.cur_list.layout.wrapper);
-		
-	if(!me.lists[dt]) {
-		me.lists[dt] = new ItemBrowser(me.wrapper, dt, label, field_list);
-	}
-
-	me.cur_list = me.lists[dt];
-	me.cur_list.show();
-	
-	page_body.change_to('ItemBrowser');
-}
-
-// -------------------------------------------------
-
-ItemBrowser = function(parent, dt, label, field_list) {	
+var ItemBrowser = function(dt, label, field_list) {	
 	var me = this;
 	this.label = label ? label : dt;
+	this.pageid = 'ItemBrowser-' + dt;
+	this.page = page_body.add_page(this.pageid);
+	
 	this.dt = dt;
 	this.field_list = field_list;
 	this.tag_filter_dict = {};
@@ -60,14 +32,9 @@ ItemBrowser = function(parent, dt, label, field_list) {
 	l = (l.toLowerCase().substr(-4) == 'list') ? l : (l + ' List')	
 
 	// make the layout
-	this.layout = new wn.PageLayout({
-		parent: parent,
-		main_width: '75%',
-		sidebar_width: '25%',
-		heading: l
-	})
+	this.layout = new wn.PageLayout(this.page, l);
 
-	this.layout.no_records = $a($td(this.layout.wtab,0,0), 'div');
+	this.layout.no_records = $a(this.layout.wrapper, 'div');
 
 	// header (?)
 	this.desc_area = $a(this.layout.head, 'div', 'field_description', '');
@@ -77,7 +44,7 @@ ItemBrowser = function(parent, dt, label, field_list) {
 	this.no_result_area = $a(this.layout.no_records, 'div','layout_wrapper',{fontSize:'14px', textAlign:'center', padding:'200px 0px'});
 	
 	// loading...
-	this.layout.loading = $a($td(this.layout.wtab,0,0), 'div','layout_wrapper',{padding:'200px 0px', textAlign:'center', fontSize:'14px', color:'#444', display:'none'});
+	this.layout.loading = $a(this.layout.wrapper, 'div','layout_wrapper',{padding:'200px 0px', textAlign:'center', fontSize:'14px', color:'#444', display:'none'});
 	this.layout.loading.innerHTML = 'Loading<img src="lib/images/ui/button-load.gif" style="margin-bottom: -2px; margin-left: 8px">';
 	
 	// setup toolbar
@@ -95,6 +62,7 @@ ItemBrowser.prototype.show_area = function(area) {
 		if(al[a]!=area) 
 			$dh(this.layout[al[a]]);
 	}
+	page_body.change_to(this.pageid);
 }
 
 ItemBrowser.prototype.setup_sidebar = function() {

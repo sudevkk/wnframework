@@ -64,10 +64,6 @@ function loaddoc(doctype, name, onload, menuitem, from_archive) {
 	}
 
 	var show_form = function(f) {
-		// load the frm container
-		if(!_f.frm_con) {
-			_f.frm_con = new _f.FrmContainer(); //new _f.FrmContainer();
-		}		
 				
 		// case A - frm not loaded
 		if(!frms[doctype]) {
@@ -85,7 +81,6 @@ function loaddoc(doctype, name, onload, menuitem, from_archive) {
 				
 	var show_doc = function(r,rt) {
 		if(locals[doctype] && locals[doctype][name]) {
-			page_body.set_status('Done');
 			var frm = frms[doctype];
 			
 			// show
@@ -151,7 +146,11 @@ function new_doc(doctype, onload, in_dialog, on_save_callback, cdt, cdn, cnic) {
 			}
 			
 			// show the form
-			frm.refresh(dn);
+			try {
+				frm.refresh(dn);				
+			} catch(e) {
+				console.log('Error refreshing ' + dn + ': ' + e);
+			}
 
 		} else {
 			msgprint('error:Not Allowed To Create '+doctype+'\nContact your Admin for help');
@@ -159,11 +158,6 @@ function new_doc(doctype, onload, in_dialog, on_save_callback, cdt, cdn, cnic) {
 	}
 
 	var show_form = function() {
-		// load the frm container
-		if(!_f.frm_con) {
-			_f.frm_con = new _f.FrmContainer();
-		}
-
 		if(!frms[doctype]) 
 			_f.add_frm(doctype, show_doc); // load
 		else 
@@ -184,7 +178,6 @@ function loadpage(page_name, call_back, no_history) {
 	if(page_name=='_home')
 		page_name = home_page;
 	var fn = function(r,rt) {
-		page_body.set_status('Done');
 		if(page_body.pages[page_name]) {
 			// loaded
 			var p = page_body.pages[page_name]
@@ -269,13 +262,18 @@ function loadscript(src, call_back) {
 // Load DocBrowser
 // -------------------------------------------------------------------------------
 
-var doc_browser_page;
+wn.provide('wn.docbrowsers');
 function loaddocbrowser(dt, label, fields) {
+	
 	wn.require('lib/js/legacy/widgets/form/fields.js');
 	wn.require('lib/js/legacy/webpage/docbrowser.js');
+	
 	dt = get_label_doctype(dt);
-	if(!doc_browser_page)
-		doc_browser_page = new ItemBrowserPage();
-	doc_browser_page.show(dt, label, fields);
+
+	if(!wn.docbrowsers[dt]) {
+		wn.docbrowsers[dt] = new ItemBrowser(dt, label, fields);
+	}
+
+	wn.docbrowsers[dt].show();
 	nav_obj.open_notify('List',dt,'');
 }
