@@ -1,0 +1,15 @@
+/*extra size menus for recent*/
+.menu-dropdown, .dropdown-menu#toolbar-recent {
+	width: 260px !important;
+	max-width: 260px !important;
+}
+
+/* ajax spinner */
+.topbar #spinner {
+	display: block;
+	float: right;
+	width: 20px;
+	margin-bottom: -5px;
+	margin-top: 10px;
+	visibility: hidden;
+}

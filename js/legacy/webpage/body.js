@@ -1,7 +1,7 @@
 /** Page Body
 
 	+ body
-		+ wntoolbar
+		+ header (wntoolbar)
 		+ banner_area
 		+ body
 			+ left_sidebar
@@ -98,7 +98,6 @@ function Body() {
 	this.setup = function() {
 		this.cp = locals['Control Panel']['Control Panel'];
 		
-		this.wntoolbar_area = $a($i('body_div'),'div'); // $a(document.getElementsByTagName('body')[0], 'div');
 		this.wrapper = $a($i('body_div'),'div');
 		this.banner_area = $a(this.wrapper, 'div');;
 		
@@ -123,12 +122,8 @@ function Body() {
 		if(user=='Guest') user_defaults.hide_webnotes_toolbar = 1;
 		
 		if(!cint(user_defaults.hide_webnotes_toolbar) || user=='Administrator') {
-			wn.require('lib/js/legacy/webpage/wntoolbar.js');
 			wn.require('lib/js/wn/ui/toolbar/toolbar.js');
-			this.wntoolbar = new WNToolbar(this.wntoolbar_area);
-			this.wntoolbar1 = new wn.ui.toolbar.Toolbar();
-
-			$y(this.wrapper, {marginTop: this.wntoolbar.wrapper.offsetHeight + 'px'});
+			this.wntoolbar = new wn.ui.toolbar.Toolbar();
 		}
 		
 		// page width

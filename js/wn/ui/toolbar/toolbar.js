@@ -31,6 +31,7 @@ wn.ui.toolbar.Toolbar = Class.extend({
 				<a class="brand" href="#index"></a>\
 				<ul class="nav">\
 				</ul>\
+				<img src="lib/images/ui/spinner.gif" id="spinner"/>\
 				<ul class="nav secondary-nav">\
 					<li class="dropdown">\
 						<a class="dropdown-toggle" href="#" onclick="return false;"></a>\
