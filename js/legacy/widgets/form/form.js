@@ -6,7 +6,6 @@
 	 			+ this.saved_wrapper
 				+ wn.PageLayout	(this.page_layout_layout)
 				+ this.wrapper
-					+ this.wtab (table)
 						+ this.main
 							+ this.head
 							+ this.tip_wrapper
@@ -46,10 +45,11 @@ _f.edit_record = function(dt, dn) {
 	
 }
 
-_f.Frm = function(doctype, parent) {
+// every form is a new page
+
+_f.Frm = function(doctype) {
 	this.docname = '';
 	this.doctype = doctype;
-	this.display = 0;
 		
 	var me = this;
 	this.is_editable = {};
@@ -62,7 +62,6 @@ _f.Frm = function(doctype, parent) {
 	this.cscript = {};
 	this.pformat = {};
 	this.fetch_dict = {};
-	this.parent = parent;
 	this.tinymce_id_list = [];
 	
 	frms[doctype] = this;
@@ -73,16 +72,56 @@ _f.Frm = function(doctype, parent) {
 	rename_observers.push(this);
 }
 
+_f.Frm.prototype.setup_meta = function() {
+	this.meta = get_local('DocType',this.doctype);
+	this.perm = get_perm(this.doctype); // for create
+	this.setup_print();
+}
+
+_f.Frm.prototype.setup_print = function() { 
+	if(this.in_dialog) return;
+	
+	var fl = getchildren('DocFormat', this.meta.name, 'formats', 'DocType');
+	var l = [];	
+	this.default_format = 'Standard';
+	if(fl.length) {
+		this.default_format = fl[0].format;
+		for(var i=0;i<fl.length;i++) 
+			l.push(fl[i].format);
+		
+	}
+
+	// if default print format is given, use it
+	if(this.meta.default_print_format)
+		this.default_format = this.meta.default_print_format;
+
+	l.push('Standard');
+	this.print_sel = $a(null, 'select', '', {width:'160px'});
+	add_sel_options(this.print_sel, l);
+	this.print_sel.value = this.default_format;
+}
+
+
 // ======================================================================================
 
 _f.Frm.prototype.setup = function() {
+	this.pageid = 'Form-' + this.doctype;
+	
+	if(this.in_dialog) {
+		this.dialog = new _f.FrmDialog();
+		this.parent = this.dialog.body;
+	} else {
+		this.page = page_body.add_page(this.pageid);
+		this.parent = this.page;
+	}
+
 
 	var me = this;
 	this.fields = [];
 	this.fields_dict = {};
 
 	// wrapper
-	this.wrapper = $a(this.parent.body, 'div');
+	this.wrapper = $a(this.parent, 'div');
 	
 	// create area for print fomrat
 	this.setup_print_layout();
@@ -123,12 +162,7 @@ _f.Frm.prototype.onhide = function() { if(_f.cur_grid_cell) _f.cur_grid_cell.gri
 // ======================================================================================
 
 _f.Frm.prototype.setup_std_layout = function() {
-	this.page_layout = new wn.PageLayout({
-		parent: this.wrapper,
-		main_width: this.in_dialog ? '100%' : '75%',
-		sidebar_width: this.in_dialog ? '0%' : '25%'
-	})	
-	
+	this.page_layout = new wn.PageLayout(this.parent);
 	
 	this.tip_wrapper = $a(this.page_layout.toolbar_area, 'div');		
 		
@@ -148,7 +182,8 @@ _f.Frm.prototype.setup_std_layout = function() {
 	
 		
 	// header - no headers for tables and guests
-	if(!(this.meta.istable || user=='Guest')) this.frm_head = new _f.FrmHeader(this.page_layout.head, this);
+	if(!(this.meta.istable || user=='Guest')) 
+		this.frm_head = new _f.FrmHeader(this.page_layout.head, this);
 	
 	// hide close btn for dialog rendering
 	if(this.frm_head && this.meta.in_dialog) $dh(this.frm_head.page_head.close_btn);
@@ -166,26 +201,6 @@ _f.Frm.prototype.setup_std_layout = function() {
 
 // ======================================================================================
 
-_f.Frm.prototype.setup_print = function() { 
-	var fl = getchildren('DocFormat', this.meta.name, 'formats', 'DocType');
-	var l = [];	
-	this.default_format = 'Standard';
-	if(fl.length) {
-		this.default_format = fl[0].format;
-		for(var i=0;i<fl.length;i++) 
-			l.push(fl[i].format);
-		
-	}
-
-	// if default print format is given, use it
-	if(this.meta.default_print_format)
-		this.default_format = this.meta.default_print_format;
-
-	l.push('Standard');
-	this.print_sel = $a(null, 'select', '', {width:'160px'});
-	add_sel_options(this.print_sel, l);
-	this.print_sel.value = this.default_format;
-}
 
 _f.Frm.prototype.print_doc = function() {
 	if(this.doc.docstatus==2)  {
@@ -301,19 +316,6 @@ _f.Frm.prototype.setup_tips = function() {
 	$dh(this.tip_box);
 }
 
-// SETUP
-// ======================================================================================
-
-
-_f.Frm.prototype.setup_meta = function() {
-	this.meta = get_local('DocType',this.doctype);
-	this.perm = get_perm(this.doctype); // for create
-	this.setup_print();
-}
-
-
-// --------------------------------------------------------------------------------------
-
 _f.Frm.prototype.setup_sidebar = function() {
 	this.sidebar = new wn.widgets.form.sidebar.Sidebar(this);
 }
@@ -420,20 +422,15 @@ _f.Frm.prototype.setup_client_script = function() {
 
 // --------------------------------------------------------------------------------------
 
-// change the parent - deprecated
-_f.Frm.prototype.set_parent = function(parent) {
-	if(parent) {
-		this.parent = parent;
-		if(this.wrapper && this.wrapper.parentNode != parent)
-			parent.appendChild(this.wrapper);
-	}
-}
-
-// --------------------------------------------------------------------------------------
-
 _f.Frm.prototype.refresh_print_layout = function() {
 	$ds(this.print_wrapper);
 	$dh(this.page_layout.wrapper);
+
+	if(page_body.cur_page==this.page) {
+		page_body.full_page();		
+	} else {
+		this.page.with_sidebar = false;
+	}
 
 	var me = this;
 	var print_callback = function(print_html) {
@@ -461,39 +458,22 @@ _f.Frm.prototype.refresh_print_layout = function() {
 }
 
 
-// SHOW!
-// ======================================================================================
-
-_f.Frm.prototype.hide = function() {
-	$dh(this.wrapper);
-	this.display = 0;
-	if(hide_autosuggest)
-		hide_autosuggest();
-}
-
 // --------------------------------------------------------------------------------------
 
 _f.Frm.prototype.show_the_frm = function() {
-	// hide other (open) forms
-	if(this.parent.last_displayed && this.parent.last_displayed != this) {
-		this.parent.last_displayed.defocus_rest();
-		this.parent.last_displayed.hide();
-	}
+	if(hide_autosuggest)
+		hide_autosuggest();
 
-	// show the form
-	if(this.wrapper && this.wrapper.style.display.toLowerCase()=='none') {
-		$ds(this.wrapper);
-		this.display = 1;
-	}
-	
-	// show the dialog
-	if(this.meta.in_dialog && !this.parent.dialog.display) {
+	if(this.dialog && !this.dialog.display) {
 		if(!this.meta.istable)
-			this.parent.table_form = false;
-		this.parent.dialog.show();
+			this.table_form = false;
+
+		_f.cur_frm = cur_frm;
+		this.dialog.show();
+		// keep the link of the curent frm
+	} else {
+		page_body.change_to(this.pageid)
 	}
-	
-	this.parent.last_displayed = this;
 }
 
 // --------------------------------------------------------------------------------------
@@ -505,9 +485,7 @@ _f.Frm.prototype.set_print_heading = function(txt) {
 
 _f.Frm.prototype.defocus_rest = function() {
 	// deselect others
-	mclose();
 	if(_f.cur_grid_cell) _f.cur_grid_cell.grid.cell_deselect();
-	cur_page = null;
 }
 
 // -------- Permissions -------
@@ -541,7 +519,7 @@ _f.Frm.prototype.refresh_header = function() {
 	if(this.frm_head)this.frm_head.refresh_toolbar();
 	
 	// add to recent
-	if(page_body.wntoolbar) page_body.wntoolbar.rdocs.add(this.doctype, this.docname, 1);
+	if(wn.ui.toolbar.recent) wn.ui.toolbar.recent.add(this.doctype, this.docname, 1);
 	
 	// refresh_heading - status etc.
 	this.set_heading();
@@ -580,7 +558,6 @@ _f.Frm.prototype.refresh = function(docname) {
 	}
 	if(!this.meta.istable) {
 		cur_frm = this;
-		this.parent.cur_frm = this;
 	}
 			
 	if(this.docname) { // document to show
@@ -616,6 +593,7 @@ _f.Frm.prototype.refresh = function(docname) {
 			if(this.print_wrapper) {
 				$dh(this.print_wrapper);
 				$ds(this.page_layout.wrapper);
+				page_body.with_sidebar();
 			}
 
 			// header
@@ -662,11 +640,7 @@ _f.Frm.prototype.refresh = function(docname) {
 		}
 		
 		// show the record
-		if(!this.display) this.show_the_frm();
-		
-		// show the page
-		if(!this.meta.in_dialog) page_body.change_to('Forms');
-
+		this.show_the_frm();
 	} 
 }
 
@@ -1074,14 +1048,12 @@ _f.Frm.prototype.reload_doc = function() {
 	}
 
 	var ret_fn = function(r, rtxt) {
-		page_body.set_status('Done')
 		// n tweets and last comment
 				
 		me.runclientscript('setup', me.doctype, me.docname);
 		me.refresh();
 	}
 
-	page_body.set_status('Reloading...')
 	if(me.doc.__islocal) { 
 		// reload only doctype
 		$c('webnotes.widgets.form.getdoctype', {'doctype':me.doctype }, ret_fn, null, null, 'Refreshing ' + me.doctype + '...');
@@ -1143,7 +1115,7 @@ _f.Frm.prototype.savetrash = function() {
 				LocalDB.delete_doc(me.doctype, me.docname);
 				
 				// delete from recent
-				if(page_body.wntoolbar) page_body.wntoolbar.rdocs.remove(me.doctype, me.docname);
+				if(wn.ui.toolbar.recent) wn.ui.toolbar.recent.remove(me.doctype, me.docname);
 				
 				// "close"
 				nav_obj.show_last_open();

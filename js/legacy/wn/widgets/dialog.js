@@ -3,6 +3,7 @@
 wn.widgets.FieldGroup = function() {
 	
 	this.make_fields = function(body, fl) {
+		wn.require('lib/js/legacy/widgets/form/fields.js');
 		$y(this.body, {padding:'11px'});
 		this.fields_dict = {}; // reset
 		for(var i=0; i<fl.length; i++) {
@@ -126,6 +127,8 @@ wn.widgets.Dialog = function(opts) {
 
 		// call onshow
 		if(this.onshow)this.onshow();
+		
+		return false;
 	}
 
 	this.hide = function() {

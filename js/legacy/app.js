@@ -1,5 +1,8 @@
 // App.js
 
+// load libs
+wn.require('lib/js/wn/core/class.js');
+
 // dialog container
 var popup_cont;
 var session = {};
@@ -62,23 +65,21 @@ function startup() {
 	}
 	
 	var callback = function(r,rt) {
-		if(wn.sb) wn.sb.hide();
 		if(r.exc) msgprint(r.exc);
-		
+				
 		setup_globals(r);
 		setup_history();
 		setup_events();
 
 		var a = new Body();
 		page_body.run_startup_code();
-		page_body.setup_sidebar_menu();
 		
 		for(var i=0; i<startup_list.length; i++) {
 			startup_list[i]();
 		}		
 		
 		$dh('startup_div');
-		$ds('body_div');
+		$('.container').css('display', 'block');
 
 		// show a new form on loading?
 		if(get_url_arg('embed')) {
@@ -95,6 +96,7 @@ function startup() {
 			loadpage(home_page);
 		}
 	}
+	
 	if(_startup_data && keys(_startup_data).length && _startup_data.docs) {
 		LocalDB.sync(_startup_data.docs);
 		callback(_startup_data, '');
@@ -102,8 +104,9 @@ function startup() {
 		// for debug
 		if(_startup_data.server_messages) msgprint(_startup_data.server_messages);
 	} else {
-		if($i('startup_div'))
+		if($i('startup_div')) {
 			$c('startup',{},callback,null,1);
+		}
 	}
 }
 
@@ -124,6 +127,7 @@ function logout() {
 		}
 		redirect_to_login();
 	});
+	return false;
 }
 
 function redirect_to_login() {
@@ -194,7 +198,6 @@ window.onresize = function() {
 
 get_window_height = function() {
 	var ht = window.innerHeight ? window.innerHeight : document.documentElement.offsetHeight ? document.documentElement.offsetHeight : document.body.offsetHeight;
-	var toolbarh = page_body.wntoolbar ? page_body.wntoolbar.wrapper.offsetHeight : 0
 	var bannerh = page_body.banner_area ? page_body.banner_area.offsetHeight : 0
 	var footerh = page_body.footer ? page_body.footer.offsetHeight : 0
 	ht = ht - bannerh - toolbarh - footerh;

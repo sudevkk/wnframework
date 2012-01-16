@@ -39,14 +39,6 @@ def runserverobj(arg=None):
 def logout():
 	webnotes.login_manager.logout()
 
-# versions
-# --------
-
-def get_diff():
-	v = webnotes.form_dict.get('version_number')
-	from build.version import VersionControl
-	webnotes.response['message'] = VersionControl().repo.diff(v)
-
 # DocType Mapper
 # ------------------------------------------------------------------------------------
 

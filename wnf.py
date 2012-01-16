@@ -20,8 +20,7 @@ def replace_code(start, txt1, txt2, extn):
 	for wt in os.walk(start, followlinks=1):
 		for fn in wt[2]:
 			if fn.split('.')[-1]==extn:
-				fpath = os.path.join(wt[0], fn)
-				with open(fpath, 'r') as f:
+				with open(os.path.join(wt[0], fn), 'r') as f:
 					content = f.read()
 				
 				if re.search(txt1, content):				
